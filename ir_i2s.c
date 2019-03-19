@@ -25,7 +25,7 @@ void sdk_rom_i2c_writeReg_Mask(uint32_t block, uint32_t host_id,
 
 #define IR_GPIO_NUM 14  // MTCK pin (I2S CLK pin)
 
-#include "ir.h"
+#include "ir_i2s.h"
 
 typedef enum {
     ir_state_idle,
