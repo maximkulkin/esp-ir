@@ -5,8 +5,8 @@ Library for [ESP-OPEN-RTOS](https://github.com/SuperHouse/esp-open-rtos) to send
 
 Example sending command:
 ```c
-#include <esp_ir/ir_tx.h>
-#include <esp_ir/ir_raw.h>
+#include <ir/ir.h>
+#include <ir/raw.h>
 
 static int16_t[] command1 = {
   3291, -1611,
@@ -26,8 +26,8 @@ ir_raw_send(command1, sizeof(command1) / sizeof(*command1));
 
 Example receiving NEC-like command:
 ```c
-#include "esp_ir/ir_rx.h"
-#include "esp_ir/ir_generic.h"
+#include "ir/ir.h"
+#include "ir/generic.h"
 
 #define IR_RX_GPIO 12
 
