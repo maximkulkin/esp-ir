@@ -13,12 +13,13 @@
 
 void ir_dump_task(void *arg) {
     ir_rx_init(IR_RX_GPIO, 1024);
+    ir_decoder_t *raw_decoder = ir_raw_make_decoder();
 
     uint16_t buffer_size = sizeof(int16_t) * 1024;
     int16_t *buffer = malloc(buffer_size);
     while (1) {
         uint16_t size = buffer_size;
-        if (ir_raw_recv(0, buffer, &size) <= 0)
+        if (ir_recv(raw_decoder, 0, buffer, &size) <= 0)
             continue;
 
         printf("Decoded packet (size = %d):\n", size);

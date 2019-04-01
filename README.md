@@ -48,11 +48,12 @@ static ir_generic_config_t my_protocol_config = {
 };
 
 ir_rx_init(IR_RX_GPIO, 1024);
+ir_decoder_t *generic_decoder = ir_generic_make_decoder(&my_protocol_config);
 
 uint8_t buffer[32];
 while (1) {
     uint16_t size = sizeof(buffer);
-    if (ir_generic_recv(&my_protocol_config, 0, buffer, &size) <= 0)
+    if (ir_recv(generic_decoder, 0, buffer, &size) <= 0)
         continue;
 
     printf("Decoded packet (size = %d):\n", size);

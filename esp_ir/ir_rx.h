@@ -4,11 +4,14 @@
 
 typedef struct ir_decoder ir_decoder_t;
 
-typedef int(*ir_decode_t)(ir_decoder_t *decoder, int16_t *pulses, uint16_t count,
-                          void *decoded_data, uint16_t *decoded_size);
+typedef int(*ir_decoder_decode_t)(ir_decoder_t *decoder, int16_t *pulses, uint16_t pulse_count,
+                                  void *decoded_data, uint16_t *decoded_size);
+
+typedef void(*ir_decoder_free_t)(ir_decoder_t *decoder);
 
 struct ir_decoder {
-    ir_decode_t decode;
+    ir_decoder_decode_t decode;
+    ir_decoder_free_t free;
 };
 
 

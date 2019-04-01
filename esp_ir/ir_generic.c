@@ -168,7 +168,8 @@ static int match(int16_t actual, int16_t expected, uint8_t tolerance) {
 
 static int ir_generic_decode(ir_generic_decoder_t *decoder,
                              int16_t *pulses, uint16_t count,
-                             void *decoded_data, uint16_t *decoded_size) {
+                             void *decoded_data, uint16_t *decoded_size)
+{
 
     ir_generic_config_t *c = decoder->config;
 
@@ -213,13 +214,14 @@ static int ir_generic_decode(ir_generic_decoder_t *decoder,
 }
 
 
-int ir_generic_recv(ir_generic_config_t *config, uint32_t timeout, uint8_t *data, uint16_t *bit_size) {
+ir_decoder_t *ir_generic_make_decoder(ir_generic_config_t *config) {
     ir_generic_decoder_t *decoder = malloc(sizeof(ir_generic_decoder_t));
     if (!decoder)
-        return -1;
+        return NULL;
 
-    decoder->decoder.decode = (ir_decode_t)ir_generic_decode;
+    decoder->decoder.decode = (ir_decoder_decode_t)ir_generic_decode;
+    decoder->decoder.free = (ir_decoder_free_t) free;
     decoder->config = config;
 
-    return ir_recv((ir_decoder_t*) decoder, timeout, data, bit_size);
+    return (ir_decoder_t*) decoder;
 }

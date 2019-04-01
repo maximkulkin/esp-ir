@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <esp_ir/ir_rx.h>
 
 
 typedef struct {
@@ -21,4 +22,4 @@ typedef struct {
 
 
 int ir_generic_send(ir_generic_config_t *config, uint8_t *data, uint16_t bit_count);
-int ir_generic_recv(ir_generic_config_t *config, uint32_t timeout, uint8_t *data, uint16_t *bit_size);
+ir_decoder_t *ir_generic_make_decoder(ir_generic_config_t *config);
