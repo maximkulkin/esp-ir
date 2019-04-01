@@ -7,7 +7,7 @@
 #include <espressif/esp_system.h>
 #include <queue.h>
 
-#include "ir_rx.h"
+#include <ir/rx.h>
 
 
 typedef enum {

@@ -4,8 +4,8 @@
 #include <FreeRTOS.h>
 #include <task.h>
 
-#include <esp_ir/ir_rx.h>
-#include <esp_ir/ir_raw.h>
+#include <ir/ir.h>
+#include <ir/raw.h>
 
 
 #define IR_RX_GPIO 12

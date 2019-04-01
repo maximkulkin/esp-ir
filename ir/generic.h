@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <esp_ir/ir_rx.h>
+#include <ir/rx.h>
 
 
 typedef struct {
