@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "ir_tx.h"
+#include "ir_rx.h"
 #include "ir_generic.h"
 
 
@@ -131,4 +132,94 @@ int ir_generic_send(ir_generic_config_t *config, uint8_t *data, uint16_t bit_cou
         ir_generic_free(encoder);
     }
     return result;
+}
+
+
+typedef struct {
+  ir_decoder_t decoder;
+
+  ir_generic_config_t *config;
+} ir_generic_decoder_t;
+
+
+static int match(int16_t actual, int16_t expected, uint8_t tolerance) {
+    if (actual < 0) {
+        if (expected > 0) {
+            return 0;
+        }
+        actual = -actual + 50;
+        expected = -expected;
+    } else {
+        if (expected < 0) {
+            return 0;
+        }
+
+        actual -= 50;
+    }
+
+    uint16_t delta = ((uint32_t)expected) * tolerance / 100;
+    if ((actual < expected - delta) || (expected + delta < actual)) {
+        return 0;
+    }
+
+    return 1;
+}
+
+
+static int ir_generic_decode(ir_generic_decoder_t *decoder,
+                             int16_t *pulses, uint16_t count,
+                             void *decoded_data, uint16_t *decoded_size) {
+
+    ir_generic_config_t *c = decoder->config;
+
+    if (!match(pulses[0], c->header_mark, c->tolerance) ||
+           !match(pulses[1], c->header_space, c->tolerance))
+    {
+        *decoded_size = 0;
+        return 0;
+    }
+
+    uint8_t *bits = decoded_data;
+    uint8_t *bits_end = decoded_data + ((*decoded_size + 7) >> 3);
+
+    *bits = 0;
+    *decoded_size = 0;
+
+    uint8_t bit_count = 0;
+    for (int i=2; i + 1 < count; i+=2, bit_count++) {
+        if (bit_count >= 8) {
+            bits++;
+            *bits = 0;
+            if (bits == bits_end)
+                return -1;
+
+            bit_count = 0;
+        }
+
+        if (match(pulses[i], c->bit1_mark, c->tolerance) &&
+                match(pulses[i+1], c->bit1_space, c->tolerance)) {
+            *bits |= 1 << bit_count;
+        } else if (match(pulses[i], c->bit0_mark, c->tolerance) &&
+                match(pulses[i+1], c->bit0_space, c->tolerance)) {
+            // *bits |= 0 << bit_count;
+        } else {
+            return (*decoded_size = (bits - (uint8_t*)decoded_data) * 8);
+        }
+    }
+
+    *decoded_size = (bits - (uint8_t*)decoded_data) * 8 + bit_count;
+
+    return *decoded_size;
+}
+
+
+int ir_generic_recv(ir_generic_config_t *config, uint32_t timeout, uint8_t *data, uint16_t *bit_size) {
+    ir_generic_decoder_t *decoder = malloc(sizeof(ir_generic_decoder_t));
+    if (!decoder)
+        return -1;
+
+    decoder->decoder.decode = (ir_decode_t)ir_generic_decode;
+    decoder->config = config;
+
+    return ir_recv((ir_decoder_t*) decoder, timeout, data, bit_size);
 }

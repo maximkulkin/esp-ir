@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "ir_tx.h"
+#include "ir_rx.h"
 
 
 typedef struct {
@@ -44,4 +45,27 @@ int ir_raw_send(int16_t *widths, uint16_t count) {
         ir_raw_free(encoder);
     }
     return result;
+}
+
+
+static int ir_raw_decode(ir_decoder_t *decoder, int16_t *pulses, uint16_t count,
+                         void *decoded_data, uint16_t *decoded_size)
+{
+    if (*decoded_size < count * sizeof(int16_t))
+        return -1;
+
+    memcpy(decoded_data, pulses, count * sizeof(int16_t));
+    *decoded_size = count;
+
+    return *decoded_size;
+}
+
+
+int ir_raw_recv(uint32_t timeout, void *recieved_data, uint16_t *received_size) {
+    ir_decoder_t *decoder = malloc(sizeof(ir_decoder_t));
+    decoder->decode = (ir_decode_t) ir_raw_decode;
+
+    int r = ir_recv(decoder, timeout, recieved_data, received_size);
+    free(decoder);
+    return r;
 }
