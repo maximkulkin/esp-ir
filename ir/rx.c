@@ -8,6 +8,7 @@
 #include <queue.h>
 
 #include <ir/rx.h>
+#include <ir/debug.h>
 
 
 typedef enum {
@@ -49,6 +50,15 @@ static void ir_rx_timeout(void *arg) {
         for (int i=0; i < ir_rx_context.buffer_pos; i++)
             pulses[i] = ir_rx_context.buffer[i];
         pulses[ir_rx_context.buffer_pos] = 0;
+
+        ir_debug("Received raw pulses:\n");
+        for (int16_t *p=pulses; *p; p++) {
+            ir_debug("%5d ", *p);
+        }
+        ir_debug("\n");
+
+        ir_debug("Queue length: %d\n",
+                 uxQueueMessagesWaiting(ir_rx_context.receive_queue));
 
         xQueueSendToBack(ir_rx_context.receive_queue, &pulses, 10);
     }
