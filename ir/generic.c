@@ -168,23 +168,23 @@ static int match(int16_t actual, int16_t expected, uint8_t tolerance) {
 
 static int ir_generic_decode(ir_generic_decoder_t *decoder,
                              int16_t *pulses, uint16_t count,
-                             void *decoded_data, uint16_t *decoded_size)
+                             void *decoded_data, uint16_t decoded_size)
 {
+    if (!decoded_size)
+        return -1;
 
     ir_generic_config_t *c = decoder->config;
 
     if (!match(pulses[0], c->header_mark, c->tolerance) ||
            !match(pulses[1], c->header_space, c->tolerance))
     {
-        *decoded_size = 0;
         return 0;
     }
 
     uint8_t *bits = decoded_data;
-    uint8_t *bits_end = decoded_data + ((*decoded_size + 7) >> 3);
+    uint8_t *bits_end = decoded_data + ((decoded_size + 7) >> 3);
 
     *bits = 0;
-    *decoded_size = 0;
 
     uint8_t bit_count = 0;
     for (int i=2; i + 1 < count; i+=2, bit_count++) {
@@ -204,13 +204,11 @@ static int ir_generic_decode(ir_generic_decoder_t *decoder,
                 match(pulses[i+1], c->bit0_space, c->tolerance)) {
             // *bits |= 0 << bit_count;
         } else {
-            return (*decoded_size = (bits - (uint8_t*)decoded_data) * 8);
+            return (decoded_size = (bits - (uint8_t*)decoded_data) * 8);
         }
     }
 
-    *decoded_size = (bits - (uint8_t*)decoded_data) * 8 + bit_count;
-
-    return *decoded_size;
+    return (bits - (uint8_t*)decoded_data) * 8 + bit_count;
 }
 
 

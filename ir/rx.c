@@ -112,7 +112,7 @@ void ir_rx_init(uint8_t gpio, uint16_t rx_buffer_size) {
 }
 
 
-int ir_recv(ir_decoder_t *decoder, uint32_t timeout, void *received_data, uint16_t *received_size) {
+int ir_recv(ir_decoder_t *decoder, uint32_t timeout, void *receive_buffer, uint16_t receive_buffer_size) {
     uint32_t start_time = sdk_system_get_time();
     while (!timeout || (sdk_system_get_time() - start_time) * portTICK_PERIOD_MS < timeout) {
         int16_t *pulses = NULL;
@@ -129,7 +129,7 @@ int ir_recv(ir_decoder_t *decoder, uint32_t timeout, void *received_data, uint16
         while (pulses[pulse_count])
             pulse_count++;
 
-        int r = decoder->decode(decoder, pulses, pulse_count, received_data, received_size);
+        int r = decoder->decode(decoder, pulses, pulse_count, receive_buffer, receive_buffer_size);
         free(pulses);
         if (r > 0) {
             return r;

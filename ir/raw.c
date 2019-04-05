@@ -49,15 +49,14 @@ int ir_raw_send(int16_t *widths, uint16_t count) {
 
 
 static int ir_raw_decode(ir_decoder_t *decoder, int16_t *pulses, uint16_t count,
-                         void *decoded_data, uint16_t *decoded_size)
+                         void *decoded_data, uint16_t decoded_size)
 {
-    if (*decoded_size < count * sizeof(int16_t))
+    if (decoded_size < count * sizeof(int16_t))
         return -1;
 
     memcpy(decoded_data, pulses, count * sizeof(int16_t));
-    *decoded_size = count;
 
-    return *decoded_size;
+    return count;
 }
 
 
