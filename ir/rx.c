@@ -21,6 +21,7 @@ typedef enum {
 
 typedef struct {
     uint8_t gpio;
+    int16_t excess;
 
     uint32_t timeout;
     ETSTimer timeout_timer;
@@ -77,13 +78,13 @@ static void IRAM ir_rx_interrupt_handler(uint8_t gpio_num) {
 
         case ir_rx_state_mark: {
             uint32_t us = now - ir_rx_context.last_time;
-            ir_rx_context.buffer[ir_rx_context.buffer_pos++] = us;
+            ir_rx_context.buffer[ir_rx_context.buffer_pos++] = us - ir_rx_context.excess;
             break;
         }
 
         case ir_rx_state_space: {
             uint32_t us = now - ir_rx_context.last_time;
-            ir_rx_context.buffer[ir_rx_context.buffer_pos++] = -us;
+            ir_rx_context.buffer[ir_rx_context.buffer_pos++] = -(us + ir_rx_context.excess);
             break;
         }
 
@@ -103,6 +104,7 @@ static void IRAM ir_rx_interrupt_handler(uint8_t gpio_num) {
 
 void ir_rx_init(uint8_t gpio, uint16_t rx_buffer_size) {
     ir_rx_context.gpio = gpio;
+    ir_rx_context.excess = 0;
     ir_rx_context.buffer = malloc(sizeof(int16_t) * rx_buffer_size);
     ir_rx_context.buffer_size = rx_buffer_size;
     ir_rx_context.buffer_pos = 0;
@@ -121,6 +123,10 @@ void ir_rx_init(uint8_t gpio, uint16_t rx_buffer_size) {
     gpio_set_interrupt(ir_rx_context.gpio, GPIO_INTTYPE_EDGE_ANY, ir_rx_interrupt_handler);
 }
 
+
+void ir_rx_set_excess(int16_t excess) {
+    ir_rx_context.excess = excess;
+}
 
 int ir_recv(ir_decoder_t *decoder, uint32_t timeout, void *receive_buffer, uint16_t receive_buffer_size) {
     uint32_t start_time = sdk_system_get_time();

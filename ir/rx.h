@@ -16,4 +16,10 @@ struct ir_decoder {
 
 
 void ir_rx_init(uint8_t gpio, uint16_t buffer_size);
+
+// Some sensors have lag and thus marks tend to be slightly longer
+// and spaces - slightly shorter. Excess amount (in microseconds) is subtracted from
+// mark pulse lengths and added to space lengths.
+void ir_rx_set_excess(int16_t excess);
+
 int ir_recv(ir_decoder_t *decoder, uint32_t timeout, void *receive_buffer, uint16_t receive_buffer_size);
