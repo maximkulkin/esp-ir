@@ -18,8 +18,8 @@ void ir_dump_task(void *arg) {
     uint16_t buffer_size = sizeof(int16_t) * 1024;
     int16_t *buffer = malloc(buffer_size);
     while (1) {
-        uint16_t size = buffer_size;
-        if (ir_recv(raw_decoder, 0, buffer, &size) <= 0)
+        int size = ir_recv(raw_decoder, 0, buffer, buffer_size);
+        if (size <= 0)
             continue;
 
         printf("Decoded packet (size = %d):\n", size);
