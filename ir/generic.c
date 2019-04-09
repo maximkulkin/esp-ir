@@ -6,6 +6,7 @@
 #include <ir/tx.h>
 #include <ir/rx.h>
 #include <ir/generic.h>
+#include <ir/debug.h>
 
 
 typedef enum {
@@ -170,14 +171,17 @@ static int ir_generic_decode(ir_generic_decoder_t *decoder,
                              int16_t *pulses, uint16_t count,
                              void *decoded_data, uint16_t decoded_size)
 {
-    if (!decoded_size)
+    if (!decoded_size) {
+        ir_debug("generic: invalid buffer size\n");
         return -1;
+    }
 
     ir_generic_config_t *c = decoder->config;
 
     if (!match(pulses[0], c->header_mark, c->tolerance) ||
            !match(pulses[1], c->header_space, c->tolerance))
     {
+        ir_debug("generic: header does not match\n");
         return 0;
     }
 
@@ -191,8 +195,10 @@ static int ir_generic_decode(ir_generic_decoder_t *decoder,
         if (bit_count >= 8) {
             bits++;
             *bits = 0;
-            if (bits == bits_end)
+            if (bits == bits_end) {
+                ir_debug("generic: data overflow\n");
                 return -1;
+            }
 
             bit_count = 0;
         }
@@ -204,11 +210,15 @@ static int ir_generic_decode(ir_generic_decoder_t *decoder,
                 match(pulses[i+1], c->bit0_space, c->tolerance)) {
             // *bits |= 0 << bit_count;
         } else {
+            ir_debug("generic: pulses at %d does not match: %d %d\n",
+                     i, pulses[i], pulses[i+1]);
             return (decoded_size = (bits - (uint8_t*)decoded_data) * 8);
         }
     }
 
-    return (bits - (uint8_t*)decoded_data) * 8 + bit_count;
+    int decoded_size = (bits - (uint8_t*)data) * 8 + bit_count;
+    ir_debug("generic: decoded %d bytes\n", decoded_size);
+    return decoded_size;
 }
 
 

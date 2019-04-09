@@ -52,14 +52,18 @@ static void ir_rx_timeout(void *arg) {
             pulses[i] = ir_rx_context.buffer[i];
         pulses[ir_rx_context.buffer_pos] = 0;
 
+        #ifdef IR_DEBUG
         ir_debug("Received raw pulses:\n");
-        for (int16_t *p=pulses; *p; p++) {
-            ir_debug("%5d ", *p);
+        for (int16_t i=0, *p=pulses; *p; i++, p++) {
+            ir_debug1("%5d ", *p);
+            if (i % 16 == 15)
+                ir_debug1("\n");
         }
-        ir_debug("\n");
+        ir_debug1("\n");
 
         ir_debug("Queue length: %d\n",
-                 uxQueueMessagesWaiting(ir_rx_context.receive_queue));
+                 (int)uxQueueMessagesWaiting(ir_rx_context.receive_queue));
+        #endif
 
         xQueueSendToBack(ir_rx_context.receive_queue, &pulses, 10);
     }
@@ -150,6 +154,7 @@ int ir_recv(ir_decoder_t *decoder, uint32_t timeout, void *receive_buffer, uint1
         if (r > 0) {
             return r;
         }
+        ir_debug("recv: got %d error code\n", r);
     }
 
     // timed out
