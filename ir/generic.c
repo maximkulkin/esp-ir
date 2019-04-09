@@ -169,9 +169,9 @@ static int match(int16_t actual, int16_t expected, uint8_t tolerance) {
 
 static int ir_generic_decode(ir_generic_decoder_t *decoder,
                              int16_t *pulses, uint16_t count,
-                             void *decoded_data, uint16_t decoded_size)
+                             void *data, uint16_t data_size)
 {
-    if (!decoded_size) {
+    if (!data_size) {
         ir_debug("generic: invalid buffer size\n");
         return -1;
     }
@@ -185,8 +185,8 @@ static int ir_generic_decode(ir_generic_decoder_t *decoder,
         return 0;
     }
 
-    uint8_t *bits = decoded_data;
-    uint8_t *bits_end = decoded_data + ((decoded_size + 7) >> 3);
+    uint8_t *bits = data;
+    uint8_t *bits_end = data + data_size;
 
     *bits = 0;
 
@@ -212,11 +212,11 @@ static int ir_generic_decode(ir_generic_decoder_t *decoder,
         } else {
             ir_debug("generic: pulses at %d does not match: %d %d\n",
                      i, pulses[i], pulses[i+1]);
-            return (decoded_size = (bits - (uint8_t*)decoded_data) * 8);
+            return (bits - (uint8_t*)data + (bit_count ? 1 : 0));
         }
     }
 
-    int decoded_size = (bits - (uint8_t*)data) * 8 + bit_count;
+    int decoded_size = bits - (uint8_t*)data + (bit_count ? 1 : 0);
     ir_debug("generic: decoded %d bytes\n", decoded_size);
     return decoded_size;
 }
