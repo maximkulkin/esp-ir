@@ -18,6 +18,9 @@ void sdk_rom_i2c_writeReg_Mask(uint32_t block, uint32_t host_id,
 #endif
 
 
+#include <FreeRTOS.h>
+#include <event_groups.h>
+
 #include <esp/timer.h>
 #include <esp/i2s_regs.h>
 #include <common_macros.h>
@@ -26,6 +29,9 @@ void sdk_rom_i2c_writeReg_Mask(uint32_t block, uint32_t host_id,
 #define IR_GPIO_NUM 14  // MTCK pin (I2S CLK pin)
 
 #include <ir/tx.h>
+
+EventGroupHandle_t tx_flags;
+#define TX_FLAG_READY (1 << 0)
 
 
 static void gen_carrier() {
@@ -71,6 +77,7 @@ static void IRAM ir_tx_timer_handler(ir_encoder_t *encoder) {
         // Done with transmission
         clr_carrier();
         encoder->free(encoder);
+        xEventGroupSetBitsFromISR(tx_flags, TX_FLAG_READY, NULL);
         return;
     }
 
@@ -102,10 +109,15 @@ void ir_tx_init() {
     I2S.CONF = SET_FIELD(I2S.CONF, I2S_CONF_BCK_DIV, 62);
     I2S.CONF = SET_FIELD(I2S.CONF, I2S_CONF_CLKM_DIV, 2);
     I2S.CONF = SET_FIELD(I2S.CONF, I2S_CONF_BITS_MOD, 0);
+
+    tx_flags = xEventGroupCreate();
 }
 
 
 int ir_tx_send(ir_encoder_t *encoder) {
+    if (xEventGroupWaitBits(tx_flags, TX_FLAG_READY, pdTRUE, pdTRUE, 200 / portTICK_PERIOD_MS))
+        return -1;
+
     hw_timer_init((void(*)(void *)) ir_tx_timer_handler, encoder);
 
     ir_tx_timer_handler(encoder);
