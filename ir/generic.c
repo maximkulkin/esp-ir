@@ -204,19 +204,27 @@ static int ir_generic_decode(ir_generic_decoder_t *decoder,
         if (bit_count >= 8) {
             bits++;
             *bits = 0;
-            if (bits == bits_end) {
-                ir_debug("generic: data overflow\n");
-                return -1;
-            }
 
             bit_count = 0;
         }
 
         if (match(pulses[i], c->bit1_mark, c->tolerance) &&
                 match(pulses[i+1], c->bit1_space, c->tolerance)) {
+
+            if (bits == bits_end) {
+                ir_debug("generic: data overflow\n");
+                return -1;
+            }
+
             *bits |= 1 << bit_count;
         } else if (match(pulses[i], c->bit0_mark, c->tolerance) &&
                 match(pulses[i+1], c->bit0_space, c->tolerance)) {
+
+            if (bits == bits_end) {
+                ir_debug("generic: data overflow\n");
+                return -1;
+            }
+
             // *bits |= 0 << bit_count;
         } else {
             ir_debug("generic: pulses at %d does not match: %d %d\n",
