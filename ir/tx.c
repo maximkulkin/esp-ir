@@ -69,6 +69,7 @@ static void IRAM ir_tx_timer_handler(ir_encoder_t *encoder) {
     int16_t pulse = encoder->get_next_pulse(encoder);
     if (pulse == 0) {
         // Done with transmission
+        clr_carrier();
         encoder->free(encoder);
         return;
     }
