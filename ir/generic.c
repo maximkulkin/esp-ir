@@ -105,19 +105,19 @@ static void ir_generic_free(ir_generic_encoder_t *encoder) {
 }
 
 
-int ir_generic_send(ir_generic_config_t *config, uint8_t *data, uint16_t bit_count) {
+static ir_encoder_t *ir_generic_make_encoder(ir_generic_config_t *config, uint8_t *data, uint16_t data_size) {
     ir_generic_encoder_t *encoder =
-        malloc(sizeof(ir_generic_encoder_t) + sizeof(uint8_t) * ((bit_count + 7) >> 3));
+        malloc(sizeof(ir_generic_encoder_t) + sizeof(uint8_t) * data_size);
     if (!encoder)
-        return -1;
+        return NULL;
 
     encoder->encoder.get_next_pulse = (ir_get_next_pulse_t)ir_generic_get_next_pulse;
     encoder->encoder.free = (ir_free_t)ir_generic_free;
 
     encoder->config = config;
-    memcpy(encoder->data, data, sizeof(uint8_t) * ((bit_count + 7) >> 3));
+    memcpy(encoder->data, data, sizeof(uint8_t) * data_size);
 
-    encoder->bit_count = encoder->bits_left = bit_count;
+    encoder->bit_count = encoder->bits_left = data_size * 8;
     encoder->byte_pos = encoder->bit_pos = 0;
 
     if (config->header_mark) {
@@ -128,9 +128,18 @@ int ir_generic_send(ir_generic_config_t *config, uint8_t *data, uint16_t bit_cou
         encoder->fsm_state = ir_state_bit_mark;
     }
 
-    int result = ir_tx_send((ir_encoder_t*) encoder);
+    return (ir_encoder_t*)encoder;
+}
+
+
+int ir_generic_send(ir_generic_config_t *config, uint8_t *data, uint16_t data_size) {
+    ir_encoder_t *encoder = ir_generic_make_encoder(config, data, data_size);
+    if (!encoder)
+        return -1;
+
+    int result = ir_tx_send(encoder);
     if (result) {
-        ir_generic_free(encoder);
+        encoder->free(encoder);
     }
     return result;
 }

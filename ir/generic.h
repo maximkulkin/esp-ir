@@ -21,5 +21,5 @@ typedef struct {
 } ir_generic_config_t;
 
 
-int ir_generic_send(ir_generic_config_t *config, uint8_t *data, uint16_t bit_count);
+int ir_generic_send(ir_generic_config_t *config, uint8_t *data, uint16_t data_size);
 ir_decoder_t *ir_generic_make_decoder(ir_generic_config_t *config);
