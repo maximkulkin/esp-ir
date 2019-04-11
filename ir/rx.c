@@ -114,9 +114,9 @@ void ir_rx_init(uint8_t gpio, uint16_t rx_buffer_size) {
     ir_rx_context.buffer_pos = 0;
 
     ir_rx_context.state = ir_rx_state_idle;
-    ir_rx_context.timeout = 5000;  // 5 ms
+    ir_rx_context.timeout = 20000;
     sdk_os_timer_setfn(&ir_rx_context.timeout_timer, ir_rx_timeout, NULL);
-    sdk_os_timer_arm(&ir_rx_context.timeout_timer, 200, 1);
+    sdk_os_timer_arm(&ir_rx_context.timeout_timer, 10, 1);
 
     ir_rx_context.receive_queue = xQueueCreate(10, sizeof(int16_t*));
     if (!ir_rx_context.receive_queue) {
