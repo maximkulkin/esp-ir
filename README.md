@@ -3,6 +3,9 @@ esp-ir
 
 Library for [ESP-OPEN-RTOS](https://github.com/SuperHouse/esp-open-rtos) to send and receive IR commands.
 
+Receiving IR codes can be done on arbitrary pin (which supports GPIO mode and pin change interrupts),
+transmission though can only be done on GPIO14.
+
 Example sending command:
 ```c
 #include <ir/ir.h>
