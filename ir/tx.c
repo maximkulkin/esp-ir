@@ -77,7 +77,11 @@ static void IRAM ir_tx_timer_handler(ir_encoder_t *encoder) {
         // Done with transmission
         clr_carrier();
         encoder->free(encoder);
-        xEventGroupSetBitsFromISR(tx_flags, TX_FLAG_READY, NULL);
+
+        BaseType_t task_woken = 0;
+        xEventGroupSetBitsFromISR(tx_flags, TX_FLAG_READY, &task_woken);
+
+        portEND_SWITCHING_ISR(task_woken);
         return;
     }
 
@@ -111,11 +115,12 @@ void ir_tx_init() {
     I2S.CONF = SET_FIELD(I2S.CONF, I2S_CONF_BITS_MOD, 0);
 
     tx_flags = xEventGroupCreate();
+    xEventGroupSetBits(tx_flags, TX_FLAG_READY);
 }
 
 
 int ir_tx_send(ir_encoder_t *encoder) {
-    if (xEventGroupWaitBits(tx_flags, TX_FLAG_READY, pdTRUE, pdTRUE, 200 / portTICK_PERIOD_MS))
+    if (xEventGroupWaitBits(tx_flags, TX_FLAG_READY, pdTRUE, pdTRUE, 200 / portTICK_PERIOD_MS) == 0)
         return -1;
 
     hw_timer_init((void(*)(void *)) ir_tx_timer_handler, encoder);
