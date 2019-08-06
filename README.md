@@ -47,7 +47,7 @@ static ir_generic_config_t my_protocol_config = {
     .footer_mark = 400,
     .footer_space = -8000,
 
-    .tolerance = 20,
+    .tolerance = 10,
 };
 
 ir_rx_init(IR_RX_GPIO, 1024);
@@ -55,18 +55,21 @@ ir_decoder_t *generic_decoder = ir_generic_make_decoder(&my_protocol_config);
 
 uint8_t buffer[32];
 while (1) {
-    uint16_t size = sizeof(buffer);
-    if (ir_recv(generic_decoder, 0, buffer, &size) <= 0)
+    uint16_t size = ir_recv(generic_decoder, 0, buffer, sizeof(buffer));
+    if (size <= 0)
         continue;
 
-    printf("Decoded packet (size = %d):\n", size);
-    for (int i=0; i < (size + 7) / 8; i++) {
+    printf("Decoded packet (size = %d): ", size);
+    for (int i=0; i < size; i++) {
         printf("0x%02x ", buffer[i]);
         if (i % 16 == 15)
+            // newline after every 16 bytes of packet data
             printf("\n");
     }
 
-    if ((size + 7) % 128)
+    if (size % 16)
+        // print final newline unless packet size is multiple of 16 and newline
+        // was printed inside of loop
         printf("\n");
 }
 ```
