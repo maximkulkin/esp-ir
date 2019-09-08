@@ -34,14 +34,14 @@ EventGroupHandle_t tx_flags;
 #define TX_FLAG_READY (1 << 0)
 
 
-static void gen_carrier() {
+static inline void gen_carrier() {
     iomux_set_function(gpio_to_iomux(IR_GPIO_NUM), IOMUX_GPIO14_FUNC_I2SI_WS);
 
     I2S.CONF = SET_MASK_BITS(I2S.CONF, I2S_CONF_RX_START);
 }
 
 
-static void clr_carrier() {
+static inline void clr_carrier() {
     gpio_enable(IR_GPIO_NUM, GPIO_OUTPUT);
     gpio_write(IR_GPIO_NUM, 0);
     I2S.CONF = CLEAR_MASK_BITS(I2S.CONF, I2S_CONF_RX_START);
