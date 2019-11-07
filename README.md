@@ -4,7 +4,17 @@ esp-ir
 Library for [ESP-OPEN-RTOS](https://github.com/SuperHouse/esp-open-rtos) to send and receive IR commands.
 
 Receiving IR codes can be done on arbitrary pin (which supports GPIO mode and pin change interrupts),
-transmission though can only be done on GPIO14.
+
+![Receiver wiring](resources/ir-decoder-wiring.png)
+
+(big black thing being IR decoder, e.g. TSOP38238. Consult datasheet on particular part pinout).
+
+Transmission though can only be done on GPIO14:
+
+![Transmitter wiring](resources/ir-led-wiring.png)
+
+(pretty much any NPN transistor will do, e.g. 2N2222; transistor base resistor could be 10K Om; LED resistor is calculated based on LED parameters, but you probably safe by assuming it can handle 10-20mA and go with ~220 Om).
+
 
 Example sending command:
 ```c
