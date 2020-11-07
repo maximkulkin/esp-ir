@@ -87,4 +87,4 @@ while (1) {
 License
 =======
 
-MIT licensed. See the bundled [LICENSE](https://github.com/maximkulkin/esp-ir-i2s/blob/master/LICENSE) file for more details.
+MIT licensed. See the bundled [LICENSE](https://github.com/maximkulkin/esp-ir/blob/master/LICENSE) file for more details.
