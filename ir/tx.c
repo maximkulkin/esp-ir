@@ -72,7 +72,10 @@ static inline void hw_timer_arm(uint32_t us) {
 static void IRAM ir_tx_timer_handler(ir_encoder_t *encoder) {
     hw_timer_pause();
 
-    int16_t pulse = encoder->get_next_pulse(encoder);
+    int16_t pulse = encoder->carry;
+    if (!pulse) {
+        pulse = encoder->get_next_pulse(encoder);
+    }
     if (pulse == 0) {
         // Done with transmission
         clr_carrier();
@@ -85,10 +88,19 @@ static void IRAM ir_tx_timer_handler(ir_encoder_t *encoder) {
         return;
     }
 
+    encoder->carry = 0;
     if (pulse > 0) {
         gen_carrier();
+        if (pulse >= 10000) {
+            encoder->carry = pulse - 9999;
+            pulse = 9999;
+        }
     } else {
         clr_carrier();
+        if (pulse <= -10000) {
+            encoder->carry = pulse + 9999;
+            pulse = -9999;
+        }
     }
     hw_timer_arm(abs(pulse));
 }
@@ -125,6 +137,7 @@ int ir_tx_send(ir_encoder_t *encoder) {
 
     hw_timer_init((void(*)(void *)) ir_tx_timer_handler, encoder);
 
+    encoder->carry = 0;
     ir_tx_timer_handler(encoder);
 
     return 0;

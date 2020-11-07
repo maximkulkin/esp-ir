@@ -21,6 +21,7 @@ typedef void(*ir_free_t)(ir_encoder_t *);
 struct ir_encoder {
     ir_get_next_pulse_t get_next_pulse;
     ir_free_t free;
+    int16_t carry;  // carry pulse to workaround 10K timer bug
 };
 
 
